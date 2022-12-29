@@ -1,0 +1,62 @@
+set(ANDROID_TEMPLATE_FOLDER "@CMAKE_BINARY_DIR@/android-template")
+file(COPY @CMAKE_SOURCE_DIR@/platform/android/
+     DESTINATION ${ANDROID_TEMPLATE_FOLDER}/)
+
+set(SRC_FOLDER "${ANDROID_TEMPLATE_FOLDER}/src/ch/opengis/@APP_PACKAGE_NAME@")
+file(RENAME "${ANDROID_TEMPLATE_FOLDER}/src/ch/opengis/qfield" ${SRC_FOLDER})
+file(GLOB_RECURSE JAVA_FILES "${SRC_FOLDER}" "*.java")
+foreach(JAVA_FILE ${JAVA_FILES})
+  file(READ ${JAVA_FILE} CONTENT)
+  string(REGEX REPLACE "ch.opengis.qfield" "ch.opengis.@APP_PACKAGE_NAME@"
+                       CONTENT "${CONTENT}")
+  file(WRITE ${JAVA_FILE} "${CONTENT}")
+endforeach()
+
+# Workaround for
+# https://bugreports.qt.io/browse/QTBUG-84302
+file(COPY_FILE @CMAKE_BINARY_DIR@/android_deployment_settings.json @CMAKE_BINARY_DIR@/android_deployment_settings.tmp)
+execute_process(
+  COMMAND
+  "bash"
+  -c "cat <<< \"$(jq '. += { \"sdkBuildToolsRevision\" : \"@ANDROID_BUILD_TOOLS_VERSION@\" }' < @CMAKE_BINARY_DIR@/android_deployment_settings.tmp)\" > @CMAKE_BINARY_DIR@/android_deployment_settings.json"
+  COMMAND_ERROR_IS_FATAL ANY
+)
+if(DEFINED ENV{KEYNAME}
+   AND DEFINED ENV{KEYPASS}
+   AND DEFINED ENV{STOREPASS})
+  execute_process(
+    COMMAND
+      "@ANDROIDDEPLOYQT_EXECUTABLE@"
+      --sign @CMAKE_SOURCE_DIR@/keystore.p12 "$ENV{KEYNAME}"
+      --storepass "$ENV{STOREPASS}"
+      --keypass "$ENV{KEYPASS}"
+      --input @CMAKE_BINARY_DIR@/android_deployment_settings.json
+      --output @CMAKE_BINARY_DIR@/android-build
+      --deployment bundled
+      --android-platform android-@ANDROID_TARGET_PLATFORM@
+      --gradle
+      --aab
+    WORKING_DIRECTORY @CMAKE_BINARY_DIR@ COMMAND_ECHO STDERR
+    COMMAND_ERROR_IS_FATAL ANY)
+  execute_process(
+    COMMAND
+      "@ANDROID_SDK@/build-tools/@ANDROID_BUILD_TOOLS_VERSION@/apksigner" sign
+      --v2-signing-enabled true
+      --ks @CMAKE_SOURCE_DIR@/keystore.p12 --ks-key-alias "$ENV{KEYNAME}"
+      --ks-pass "pass:$ENV{STOREPASS}"
+      --key-pass "pass:$ENV{KEYPASS}"
+        @CMAKE_BINARY_DIR@/android-build/build/outputs/apk/release/android-build-release-signed.apk
+    WORKING_DIRECTORY @CMAKE_BINARY_DIR@ COMMAND_ECHO STDERR
+    COMMAND_ERROR_IS_FATAL ANY)
+else()
+  execute_process(
+    COMMAND
+      "@ANDROIDDEPLOYQT_EXECUTABLE@"
+      --input @CMAKE_BINARY_DIR@/android_deployment_settings.json
+      --output @CMAKE_BINARY_DIR@/android-build
+      --deployment bundled
+      --android-platform android-@ANDROID_TARGET_PLATFORM@
+      --gradle
+    WORKING_DIRECTORY @CMAKE_BINARY_DIR@ COMMAND_ECHO STDERR
+    COMMAND_ERROR_IS_FATAL ANY)
+endif()

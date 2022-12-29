@@ -1,0 +1,7 @@
+wget -o - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | sudo apt-key add -
+sudo apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
+sudo apt-get update
+sudo apt install cmake
+sudo apt install cmake-curses-gui  # recommended, includes ccmake.
+cmake -S . -B build -DQGIS_ROOT=/usr/lib/qgis
+

@@ -1,0 +1,25 @@
+app-id: ch.opengisch.qfield.QField
+base: io.qt.qtwebkit.BaseApp
+base-version: 5.15-21.08
+runtime: org.kde.Platform
+runtime-version: 5.15.-21.08
+sdk: org.kde.Sdk
+command: ch.opengisch.qfield.QField
+finish-args:
+  - "--share=network"
+  - "--share=ipc"
+  - "--socket=wayland"
+  - "--socket=fallback-x11"
+  - "--filesystem=host"
+  - "--device=dri"
+build-options:
+  env:
+    PYTHONPATH: /app/lib/python3.9/site-packages:/usr/lib/python3.9/site-packages
+modules:
+  - name: qgis
+    buildsystem: cmake
+    sources:
+      - type: archive
+        url: https://github.com/opengisch/QField/archive/refs/tags/v2.5.7.tar.gz
+    config-opts:
+      - "DQGIS_ROOT=/usr/lib/qgis"

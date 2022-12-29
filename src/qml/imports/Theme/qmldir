@@ -1,0 +1,10 @@
+module Theme
+singleton Theme 1.0 Theme.qml
+QfSlider 1.0 QfSlider.qml
+QfSwitch 1.0 QfSwitch.qml
+QfButton 1.0 QfButton.qml
+QfToolButton 1.0 QfToolButton.qml
+QfTextField 1.0 QfTextField.qml
+QfCollapsibleMessage 1.0 QfCollapsibleMessage.qml
+QfDropShadow 1.0 QfDropShadow.qml
+QfOpacityMask 1.0 QfOpacityMask.qml
