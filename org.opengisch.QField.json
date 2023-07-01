@@ -1,0 +1,38 @@
+{
+  "app-id": "org.opengisch.QField",
+  "runtime": "org.kde.Platform",
+  "runtime-version": "5.15-22.08",
+  "sdk": "org.kde.Sdk",
+  "command": "qfield",
+  "finish-args": [
+    "--socket=x11",
+    "--socket=wayland",
+    "--share=network",
+    "--filesystem=host"
+  ],
+  "build-options": {},
+  "cleanup": [
+    "*.a"
+  ],
+  "modules": [
+    {
+      "name": "QField",
+      "buildsystem": "cmake-ninja",
+      "build-commands": [
+        "cmake -S . -B build -G Ninja",
+        "cmake --build build --config Release"
+      ],
+      "config-opts": [
+        "-DCMAKE_CXX_COMPILER=/usr/bin/g++",
+        "-DCMAKE_C_COMPILER=/usr/bin/gcc",
+        "-DCMAKE_MAKE_PROGRAM=/usr/bin/ninja",
+        "-DCMAKE_INSTALL_LIBDIR=/lib",
+        "-DCMAKE_BUILD_DIR=/opt/builder/build",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DWITH_VCPKG=ON",
+        "-DSYSTEM_QT=ON",
+        "-DCMAKE_INSTALL_PREFIX=/usr"
+      ]
+    }
+  ]
+}
